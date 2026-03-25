@@ -1,7 +1,7 @@
 # AI for App Development - Deep Dive
 ## Building and deploying AI Apps that leverage agents, MCP and RAG
 ## Session labs 
-## Revision 2.7 - 02/27/26
+## Revision 2.8 - 03/24/26
 
 **Follow the startup instructions in the README.md file IF NOT ALREADY DONE!**
 
@@ -794,7 +794,7 @@ Tell me about HQ
 
 <br><br>
 
-7. Try a few more queries to see the agent in action. You'll see your previous questions and answers stay visible in the chat window — though note that each query is independent (the agent doesn't carry context between questions).
+7. Try a few more queries to see the agent in action. You'll see your previous questions and answers stay visible in the chat window — though note that each query is independent (the agent doesn't carry context between questions). We'll fix that in the next lab!
 
 ![Gradio interface](./images/v2app31.png?raw=true "Gradio interface")
 
@@ -807,7 +807,147 @@ Tell me about HQ
 </p>
 </br></br>
 
-**Lab 8 - Deploying to Hugging Face**
+**Lab 8 - Making the Agent Truly Conversational**
+
+**Purpose: In this lab, we'll transform our single-query office assistant into a truly agentic conversational system with memory, diverse query handling, and follow-up capability.**
+
+---
+
+**What the conversational agent does**
+- Adds **conversation memory** — the agent remembers previous Q&A exchanges and uses them to understand follow-up questions like "What services do they offer?"
+- Adds **two new MCP tools** (`find_offices_by_service`, `list_all_offices`) so the agent has more options to choose from — making its tool-selection decisions genuinely agentic.
+- Enhances the **system prompt** so the LLM can handle five different query types: office+weather lookups, service queries, comparisons, follow-ups, and overviews.
+- Updates the **Gradio interface** with memory state, a memory indicator, and richer example queries.
+
+**What it demonstrates**
+- **Conversation memory**: The simplest effective memory pattern — a list of (question, answer) tuples appended to the system prompt. The LLM can resolve pronouns ("they", "that office") by referring to this history.
+- **Agentic tool selection**: With 6 tools and 5 query types, the LLM must reason about *which* tools to use, not just follow a fixed sequence. A service query skips weather entirely; a comparison calls `search_offices` twice.
+- **True conversational flow**: Ask "Tell me about HQ", then "What services do they offer?" — the agent connects the two queries through memory. This is what makes it feel like a real assistant.
+- **State management in Gradio**: Using `gr.State` to persist memory across queries within a browser session, and passing it through the event handler chain.
+
+---
+
+### Steps
+
+1. In this lab, we'll add three major capabilities in one pass: conversation memory in the agent, new tools on the MCP server, and memory-aware UI in Gradio. Let's start by adding the new MCP tools. Open the diff view for the server:
+
+```
+code -d labs/common/lab8_server_solution.txt mcp_server.py
+```
+
+<br><br>
+
+2. Review and merge the changes. The key additions to notice:
+   - **`find_offices_by_service(service)`** — a new `@mcp.tool` that searches the vector DB with a service-focused query (e.g., "Tech Development") and returns up to 8 results for broader coverage
+   - **`list_all_offices()`** — a new `@mcp.tool` that returns up to 20 results for overview/comparison queries
+   - Both tools use the same ChromaDB collection as `search_offices` but with different query strategies and result counts
+   - All existing tools remain unchanged
+
+   When finished merging, close the tab to save.
+
+<br><br>
+
+3. Now let's add conversation memory and smarter query handling to the agent. Open the diff view:
+
+```
+code -d labs/common/lab8_agent_solution.txt rag_agent.py
+```
+
+<br><br>
+
+4. Review and merge each section. This is the most important set of changes — take time to understand them:
+   - **Section 1 — Configuration**: Adds `MAX_MEMORY = 5` — the agent keeps the last 5 exchanges in memory
+   - **Section 3 — System prompt**: Substantially enhanced — now describes all 6 tools and teaches the LLM to handle 5 query types (office+weather, service queries, comparisons, follow-ups, and overviews). The key rule: "Choose the RIGHT tools for the query type — do NOT always get weather"
+   - **Section 4 — Async TAO loop**: Now accepts a `memory` parameter. Before the TAO loop starts, it builds a `memory_context` string from previous exchanges and appends it to the system prompt. After the loop completes, the new Q&A pair is appended to memory. Returns `(result, memory)` tuple
+   - **Section 5 — Sync wrapper**: Updated signature — `run_agent(prompt, memory=None)` now returns `(result, memory)` tuple
+   - **Section 6 — Interactive loop**: Maintains a `memory = []` list across the while loop. Adds `memory` and `clear` commands for inspecting/resetting conversation history
+
+   When finished merging, close the tab to save.
+
+<br><br>
+
+5. Now let's update the Gradio interface to support memory. Open the diff view:
+
+```
+code -d labs/common/lab8_gradio_solution.txt gradio_app.py
+```
+
+<br><br>
+
+6. Review and merge each section. Key things to notice:
+   - **Section 2 — chat_handler**: Now accepts a `memory` parameter, passes it to `run_agent()`, receives updated memory back, and returns a memory HTML indicator for the sidebar
+   - **Section 3 — Layout**: Adds `memory_state = gr.State(value=[])` for persistent memory, a `memory_display` HTML component in the sidebar, and four example query buttons (including follow-up and service queries)
+   - **Section 4 — Event handlers**: All wired with `memory_state` in inputs/outputs. Clear button now resets both chat history AND memory. The `_memory_html()` helper generates the sidebar memory indicator
+
+   When finished merging, close the tab to save.
+
+<br><br>
+
+7. Now let's run the conversational app:
+
+```
+python gradio_app.py
+```
+
+Open the app as before (via the popup or the PORTS tab, port 7860). (**NOTE**: The first query may take up to 90 seconds while everything initializes.)
+
+<br><br>
+
+8. Start with a basic office query to establish context:
+
+```
+Tell me about HQ
+```
+
+You should see the familiar TAO loop — search offices, geocode, get weather, convert temperature — and a friendly summary. But now, the sidebar memory indicator updates to show this exchange.
+
+<br><br>
+
+9. Now test the agent's memory with a **follow-up question**. Without mentioning "HQ" again, ask:
+
+```
+What services do they offer?
+```
+
+The agent should use conversation memory to understand that "they" refers to HQ, search for that office's information, and answer with the services (Corporate Operations, Finance) — **without** fetching weather this time, because the question is about services, not weather. This is true agentic reasoning: the agent decided which tools to use based on the question type.
+
+<br><br>
+
+10. Try a **service-based query** — a completely different query type:
+
+```
+Which offices do Tech Development?
+```
+
+Watch the TAO loop — the agent should call `find_offices_by_service` instead of `search_offices`, and return multiple offices (West Coast Hub, Northeast, Tokyo, Mumbai, Singapore) without doing any weather lookups. The agent chose a different tool chain based on the question.
+
+<br><br>
+
+11. Try a **comparison query**:
+
+```
+Compare the Tokyo and London offices
+```
+
+The agent should call `search_offices` twice (once for each office) and compose a side-by-side comparison. Again, no weather unless you specifically ask about it.
+
+<br><br>
+
+12. Experiment with your own follow-up questions! Some ideas to try:
+    - "Which one has more employees?" (uses memory of the comparison)
+    - "Tell me about the Dubai office" then "What's the weather like there?" (two-step follow-up)
+    - "How many offices do we have?" (triggers `list_all_offices`)
+
+    Notice how the memory indicator in the sidebar tracks your conversation history. Each query builds on the last, and the agent decides which tools to use based on what you're asking — not a fixed sequence. That's what makes it a real conversational agent.
+
+    When done, stop the Gradio app with Ctrl-C in the terminal.
+
+<p align="center">
+**[END OF LAB]**
+</p>
+</br></br>
+
+**Lab 9 - Deploying to Hugging Face**
 
 **Purpose: Deploying the full app into a Hugging Face Space.**
 
@@ -897,7 +1037,7 @@ git push
 
 <br><br>
 
-12. Congratulations! You've taken an AI agent from a local prototype through to a deployed web application. with a professional interface and a cloud LLM backend.
+12. Congratulations! You've taken an AI agent from a local prototype through a truly conversational system to a deployed web application with a professional interface, conversation memory, and a cloud LLM backend.
 
 <p align="center">
 **[END OF LAB]**
