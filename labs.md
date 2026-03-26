@@ -912,7 +912,9 @@ Open the app as before (via the popup or the PORTS tab, port 7860).
 Tell me about HQ
 ```
 
-You should see the familiar TAO loop — search offices, geocode, get weather, convert temperature — and a friendly summary. But now, the sidebar memory indicator updates to show this exchange.
+You should see the familiar response with the location, weather, and an informational note. But now, the sidebar memory indicator updates to show this exchange.
+
+![Running updated app](./images/v3appb21.png?raw=true "Running updated app")
 
 <br><br>
 
@@ -924,6 +926,8 @@ What services do they offer?
 
 The agent should use conversation memory to understand that "they" refers to HQ, search for that office's information, and answer with the services (Corporate Operations, Finance) — **without** fetching weather this time, because the question is about services, not weather. This is true agentic reasoning: the agent decided which tools to use based on the question type.
 
+![Followup](./images/v3appb22.png?raw=true "Followup")
+
 <br><br>
 
 10. Try a **service-based query** — a completely different query type:
@@ -932,7 +936,9 @@ The agent should use conversation memory to understand that "they" refers to HQ,
 Which offices do Tech Development?
 ```
 
-Watch the TAO loop — the agent should call `find_offices_by_service` instead of `search_offices`, and return multiple offices (West Coast Hub, Northeast, Tokyo, Mumbai, Singapore) without doing any weather lookups. The agent chose a different tool chain based on the question.
+Back in the terminal of the Codespace, you can watch the TAO loop. This time, the agent should call `find_offices_by_service` instead of `search_offices`, and return multiple offices (West Coast Hub, Northeast, Tokyo, Mumbai, Singapore) without doing any weather lookups. The agent chose a different tool chain based on the question. You'll be able to see the end result also in the app.
+
+![Tech offices](./images/v3appb23.png?raw=true "Tech offices")
 
 <br><br>
 
@@ -943,6 +949,10 @@ Compare the Tokyo and London offices
 ```
 
 The agent should call `search_offices` twice (once for each office) and compose a side-by-side comparison. Again, no weather unless you specifically ask about it.
+
+![compare offices](./images/v3appb24.png?raw=true "compare offices")
+
+![compare details](./images/v3appb25.png?raw=true "compare details")
 
 <br><br>
 
