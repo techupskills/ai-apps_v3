@@ -23,6 +23,11 @@ ARCHITECTURE
 # IMPORTS
 # ═══════════════════════════════════════════════════════════════════════
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="gradio")
+warnings.filterwarnings("ignore", message=".*no_silent_downcasting.*")
+warnings.filterwarnings("ignore", message=".*copy keyword is deprecated.*")
+
 import gradio as gr
 
 # ─────────────────────────────────────────────────────────────────────
@@ -120,14 +125,14 @@ def _memory_html(memory: list) -> str:
     count = len(memory)
     if count == 0:
         return ('<div class="memory-badge">'
-                '🧠 <strong>Memory:</strong> No conversation history yet. '
+                '<strong>Memory:</strong> No conversation history yet. '
                 'Ask a question to get started!</div>')
 
     items = []
     for q, _a in memory[-5:]:
         items.append(f"<li>{q[:60]}{'...' if len(q) > 60 else ''}</li>")
     return (f'<div class="memory-badge">'
-            f'🧠 <strong>Memory:</strong> {count} exchange(s)<br>'
+            f'<strong>Memory:</strong> {count} exchange(s)<br>'
             f'<ul style="margin:0.25rem 0 0 1rem;padding:0;">'
             f'{"".join(items)}</ul></div>')
 
@@ -150,10 +155,10 @@ with gr.Blocks(
                 border-radius: 14px;
                 color: white;
                 margin-bottom: 1rem;">
-        <h1 style="margin: 0; font-size: 1.8rem; font-weight: 700;">
+        <h1 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: #ffffff !important;">
             AI Office Assistant
         </h1>
-        <p style="margin: 0.25rem 0 0 0; opacity: 0.9; font-size: 0.95rem;">
+        <p style="margin: 0.25rem 0 0 0; opacity: 0.9; font-size: 0.95rem; color: #e0e7ff !important;">
             Conversational Agent with Memory &middot; RAG + Live Weather
         </p>
     </div>
@@ -189,7 +194,7 @@ with gr.Blocks(
             gr.Markdown("### Conversation Memory")
             memory_display = gr.HTML(
                 '<div class="memory-badge">'
-                '🧠 <strong>Memory:</strong> No conversation history yet. '
+                '<strong>Memory:</strong> No conversation history yet. '
                 'Ask a question to get started!</div>'
             )
 
@@ -230,7 +235,7 @@ with gr.Blocks(
     # Clear button resets the chat AND memory
     clear_btn.click(
         lambda: ([], "", [], '<div class="memory-badge">'
-                 '🧠 <strong>Memory:</strong> No conversation history yet. '
+                 '<strong>Memory:</strong> No conversation history yet. '
                  'Ask a question to get started!</div>'),
         outputs=[chatbot, msg, memory_state, memory_display],
     )
