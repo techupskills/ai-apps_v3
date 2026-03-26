@@ -758,7 +758,13 @@ code -d labs/common/lab7_gradio_solution.txt gradio_app.py
 
 <br><br>
 
-3. Now, let's run the Gradio app:
+3. Now, set the environment variable for your Hugging Face token (replacing "your-token-value" with your actual token value) so we can use the larger model. 
+
+```
+export HF_TOKEN=your-token-value
+```
+
+4. Now run the gradio app.
 
 ```
 python gradio_app.py
@@ -766,7 +772,7 @@ python gradio_app.py
 
 <br><br>
 
-4. When this starts, you should see a pop-up in the lower right that has a button to click to open the app. Click that to open it in a new browser tab. If it opens a new codespace instance instead, close that tab, go back, and try again.
+5. When this starts, you should see a pop-up in the lower right that has a button to click to open the app. Click that to open it in a new browser tab. If it opens a new codespace instance instead, close that tab, go back, and try again.
 
 ![Opening via popup](./images/v2app27.png?raw=true "Opening via popup")
 
@@ -778,7 +784,7 @@ If you miss the popup, you can also open the app by switching to the *PORTS* tab
 
 <br><br>
 
-5. Once the app opens, you'll see the professional interface with a chat area on the left and office information on the right. Try entering a query like:
+6. Once the app opens, you'll see the professional interface with a chat area on the left and office information on the right. Try entering a query like:
 
 ```
 Tell me about HQ
@@ -788,7 +794,7 @@ Tell me about HQ
 
 <br><br>
 
-6. You should see the agent process your query and return a natural language summary with office details and live weather. Try the example buttons at the bottom of the chat area for quick queries. (**NOTE**: Because of all the processing that happens in the background, you will probably have to wait up to 90 seconds on the initial query while the process starts the server, etc. During this time, you can switch back to the terminal and see the processing.)
+7. You should see the agent process your query and return a natural language summary with office details and live weather. Try the example buttons at the bottom of the chat area for quick queries. (**NOTE**: Because of all the processing that happens in the background, you will probably have to wait up to 90 seconds on the initial query while the process starts the server, etc. During this time, you can switch back to the terminal and see the processing.)
 
 ![Gradio interface](./images/v2app29.png?raw=true "Gradio interface")
 
@@ -835,6 +841,8 @@ Tell me about HQ
 code -d labs/common/lab8_server_solution.txt mcp_server.py
 ```
 
+![Merging enhancements](./images/v3appb18.png?raw=true "Merging enhancements")
+
 <br><br>
 
 2. Review and merge the changes. The key additions to notice:
@@ -845,6 +853,7 @@ code -d labs/common/lab8_server_solution.txt mcp_server.py
 
    When finished merging, close the tab to save.
 
+
 <br><br>
 
 3. Now let's add conversation memory and smarter query handling to the agent. Open the diff view:
@@ -852,6 +861,8 @@ code -d labs/common/lab8_server_solution.txt mcp_server.py
 ```
 code -d labs/common/lab8_agent_solution.txt rag_agent.py
 ```
+
+![Merging agent enhancements](./images/v3appb19.png?raw=true "Merging agent enhancements")
 
 <br><br>
 
@@ -872,6 +883,8 @@ code -d labs/common/lab8_agent_solution.txt rag_agent.py
 code -d labs/common/lab8_gradio_solution.txt gradio_app.py
 ```
 
+![Merging Gradio interface enhancements](./images/v3appb20.png?raw=true "Merging Gradio interface enhancements")
+
 <br><br>
 
 6. Review and merge each section. Key things to notice:
@@ -883,13 +896,13 @@ code -d labs/common/lab8_gradio_solution.txt gradio_app.py
 
 <br><br>
 
-7. Now let's run the conversational app:
+7. Now let's run the conversational app:(Make sure you're running this in a terminal where the HF_TOKEN environment variable is set.)
 
 ```
 python gradio_app.py
 ```
 
-Open the app as before (via the popup or the PORTS tab, port 7860). (**NOTE**: The first query may take up to 90 seconds while everything initializes.)
+Open the app as before (via the popup or the PORTS tab, port 7860). 
 
 <br><br>
 
