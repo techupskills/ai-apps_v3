@@ -94,17 +94,22 @@ You have these tools:
 
 search_offices(query: str)
     Searches the office database for matching information.
-    Returns: text chunks with office names, cities, and details.
+    Returns: text chunks — each chunk is one row from the office table
+    with fields in this order, separated by spaces:
+      Office Name | Address | Number of Employees | Revenue (USD) | Services Offered
+    Example chunk: "HQ 123 Main St, New York, NY 200 15M Corporate Operations, Finance"
+    means: name=HQ, address=123 Main St New York NY, 200 employees,
+    $15M revenue, services=Corporate Operations and Finance.
     Use for questions about a specific office.
 
 find_offices_by_service(service: str)
     Finds offices that offer a specific service type.
-    Returns: text chunks for offices matching the service.
+    Returns: text chunks (same format as search_offices).
     Use when asked "which offices do X?" or "where is Y offered?"
 
 list_all_offices()
     Lists all offices with details. No arguments needed.
-    Returns: text chunks for all offices.
+    Returns: text chunks (same format as search_offices).
     Use for overview, counting, or broad comparison questions.
 
 geocode_location(name: str)
@@ -131,6 +136,9 @@ QUERY TYPES — choose tools based on the question:
 
 1. OFFICE + WEATHER ("Tell me about HQ"):
    search_offices → geocode_location → get_weather → convert_c_to_f → DONE
+   Final answer format: state the office city, the current weather
+   (conditions and temperature in °F), and one interesting fact about
+   that city from your own knowledge.
 
 2. SERVICE QUERY ("Which offices do Tech Development?"):
    find_offices_by_service → DONE  (no weather needed)
@@ -161,8 +169,10 @@ RULES:
 4. For service or comparison queries, just summarize the office data
 5. The FIRST search result is the most relevant — use the city from it
 6. When geocoding, use ONLY the city name (e.g. "New York" not "New York, NY")
-7. Office details MUST come from tool results — do NOT invent them
-8. You may add one interesting fact from your own knowledge
+7. Office details MUST come from tool results — do NOT invent them.
+   Remember the data format: Name, Address, Employees, Revenue, Services.
+   Do NOT confuse revenue with square footage or other metrics.
+8. You may add one interesting fact about the city from your own knowledge
 9. Respond with ONLY ONE Thought/Action/Args per message — NEVER plan ahead
 """).strip()
 
