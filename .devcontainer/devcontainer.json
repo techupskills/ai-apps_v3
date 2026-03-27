@@ -1,5 +1,8 @@
 {
-    "build": { "dockerfile": "Dockerfile" },
+    "build": {                                                                                                            
+        "dockerfile": "Dockerfile",                                                                                
+        "context": ".."                                                                                                   
+    },     
     "hostRequirements": {
        "cpus": 4,
        "memory": "16gb",
